@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func TrackingRoutes(router *gin.Engine) {
+func TrackingRoutes(router *gin.RouterGroup) {
 	trackingRepository := repositories.NewTrackingRepository()
 	trackingService := services.NewTrackingService(trackingRepository)
 	trackingHandler := handlers.NewTrackingHandler(trackingService)

@@ -9,7 +9,7 @@ import (
 )
 
 
-func FundingRoutes(router *gin.Engine) {
+func FundingRoutes(router *gin.RouterGroup) {
 	fundingRepo := repositories.NewFundingRepository()
 	fundingSvc := services.NewFundingService(fundingRepo)
 	fundingHandler := handlers.NewFundingHandler(fundingSvc)

@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ProjectRoutes(router *gin.Engine) {
+func ProjectRoutes(router *gin.RouterGroup) {
 	projectRepository := repositories.NewProjectRepository()
 	projectService := services.NewProjectService(projectRepository)
 	projectHandler := handlers.NewProjectHandler(projectService)

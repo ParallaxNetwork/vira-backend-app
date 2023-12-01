@@ -11,6 +11,7 @@ import (
 )
 
 type UserRepository interface {
+	FindAll() ([]*models.User, error)
 	FindById(userID string) (*models.User, error)
 	InsertOne(user models.User) (*models.User, error)
 	DeleteById(userId string) (error)
@@ -20,6 +21,27 @@ type userRepository struct{}
 
 func NewUserRepository() UserRepository {
 	return &userRepository{}
+}
+
+func (r *userRepository) FindAll() ([]*models.User, error) {
+	db, ctx, err := utils.MongodbConnect()
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	var users []*models.User
+
+	cursor, err := db.Collection("users").Find(ctx, bson.M{})
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	err = cursor.All(ctx, &users)
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	return users, nil
 }
 
 func (r *userRepository) FindById(userId string) (*models.User, error) {

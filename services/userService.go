@@ -6,6 +6,7 @@ import (
 )
 
 type UserService interface {
+	FindAll() ([]*models.User, error)
 	FindById(userID string) (*models.User, error)
 	InsertOne(user models.User) (*models.User, error)
 	DeleteById(userId string) (error)
@@ -17,6 +18,10 @@ type userService struct {
 
 func NewUserService(repo repositories.UserRepository) UserService {
 	return &userService{repo: repo}
+}
+
+func (s *userService) FindAll() ([]*models.User, error) {
+  return s.repo.FindAll()
 }
 
 func (s *userService) FindById(userID string) (*models.User, error) {

@@ -7,10 +7,12 @@ import (
 func SetupRouter() *gin.Engine {
 	mainRouter := gin.Default()
 
-	UserRoutes(mainRouter)
-	ProjectRoutes(mainRouter)
-	FundingRoutes(mainRouter)
-	TrackingRoutes(mainRouter)
+	v1 := mainRouter.Group("api/v1")
+
+	UserRoutes(v1)
+	ProjectRoutes(v1)
+	FundingRoutes(v1)
+	TrackingRoutes(v1)
 
 	return mainRouter
 }

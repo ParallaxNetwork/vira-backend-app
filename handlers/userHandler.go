@@ -9,6 +9,7 @@ import (
 )
 
 type UserHandler interface {
+	UserFindAllHandler() gin.HandlerFunc
 	UserFindByIdHandler() gin.HandlerFunc
 	UserInsertHandler() gin.HandlerFunc
 	UserDeleteByIdHandler() gin.HandlerFunc
@@ -22,6 +23,18 @@ func NewUserHandler(svc services.UserService) UserHandler {
 	return &userHandler{
 		svc: svc,
 	}
+}
+
+func (s *userHandler) UserFindAllHandler() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        users, err := s.svc.FindAll()
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get users"})
+            return
+        }
+
+        c.JSON(http.StatusOK, users)
+    }
 }
 
 func (s *userHandler) UserFindByIdHandler() gin.HandlerFunc {
