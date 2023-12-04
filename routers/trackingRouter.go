@@ -19,5 +19,6 @@ func TrackingRoutes(router *gin.RouterGroup) {
 		tracking.GET("/", trackingHandler.TrackingFindAllHandler())
 		tracking.POST("/", trackingHandler.TrackingInsertHandler())
 		tracking.DELETE("/:id", trackingHandler.TrackingDeleteByIdHandler())
+		tracking.PUT("/:id", trackingHandler.TrackingUpdateByIdHandler())
 	}
 }

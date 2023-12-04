@@ -15,6 +15,7 @@ type UserRepository interface {
 	FindById(userID string) (*models.User, error)
 	InsertOne(user models.User) (*models.User, error)
 	DeleteById(userId string) (error)
+	UpdateById(userId string, updatedUser *models.User) (*models.User, error)
 }
 
 type userRepository struct{}
@@ -96,3 +97,21 @@ func (r *userRepository) DeleteById(userId string) (error) {
 
 	return nil
 }
+
+func (r *userRepository) UpdateById(userId string, updatedUser *models.User) (*models.User, error) {
+	db, ctx, err := utils.MongodbConnect()
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	filter := bson.M{"_id": userId}
+	update := bson.M{"$set": updatedUser}
+
+	_, err = db.Collection("users").UpdateOne(ctx, filter, update)
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	return updatedUser, nil
+}
+

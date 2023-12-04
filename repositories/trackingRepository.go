@@ -15,6 +15,7 @@ type TrackingRepository interface {
 	FindAll() ([]models.Tracking, error)
 	InsertOne(tracking models.Tracking) (*models.Tracking, error)
 	DeleteById(id string) (error)
+	UpdateById(id string, updatedTracking *models.Tracking) (*models.Tracking, error)
 }
 
 type trackingRepository struct{}
@@ -96,4 +97,21 @@ func (r *trackingRepository) DeleteById(id string) (error) {
 	}
 
 	return nil
+}
+
+func (r *trackingRepository) UpdateById(id string, updatedTracking *models.Tracking) (*models.Tracking, error) {
+	db, ctx, err := utils.MongodbConnect()
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	filter := bson.M{"_id": id}
+	update := bson.M{"$set": updatedTracking}
+
+	_, err = db.Collection("trackings").UpdateOne(ctx, filter, update)
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	return updatedTracking, nil
 }

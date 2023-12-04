@@ -13,6 +13,7 @@ type ProjectHandler interface {
 	ProjectFindAllHandler() gin.HandlerFunc
 	ProjectInsertHandler() gin.HandlerFunc
 	ProjectDeleteByIdHandler() gin.HandlerFunc
+	ProjectUpdateByIdHandler() gin.HandlerFunc
 }
 
 type projectHandler struct {
@@ -78,5 +79,25 @@ func (s *projectHandler) ProjectDeleteByIdHandler() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"message": "Project deleted successfully"})
+	}
+}
+
+func (s *projectHandler) ProjectUpdateByIdHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		projectId := c.Param("id")
+
+		var updatedProject models.Project
+		if err := c.ShouldBindJSON(&updatedProject); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+		}
+
+		project, err := s.svc.UpdateById(projectId, updatedProject)
+		if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update project"})
+				return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Project updated successfully", "project": project})
 	}
 }

@@ -21,5 +21,6 @@ func FundingRoutes(router *gin.RouterGroup) {
 		fundingRoutes.GET("/user/:id", fundingHandler.FundingFindAllByUserId())
 		fundingRoutes.POST("/", fundingHandler.FundingInsertHandler())
 		fundingRoutes.DELETE("/:id", fundingHandler.FundingDeleteByIdHandler())
+		fundingRoutes.PUT("/:id", fundingHandler.FundingUpdateByIdHandler())
 	}
 }

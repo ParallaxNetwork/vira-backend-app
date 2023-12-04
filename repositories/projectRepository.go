@@ -16,6 +16,7 @@ type ProjectRepository interface {
 	FindAll() ([]models.Project, error)
 	InsertOne(project models.Project) (*models.Project, error)
 	DeleteById(projectId string) (error)
+	UpdateById(projectId string, updatedProject *models.Project) (*models.Project, error)
 }
 
 type projectRepository struct {}
@@ -118,4 +119,21 @@ func (r *projectRepository) DeleteById(projectId string) (error) {
 	}
 
 	return nil
+}
+
+func (r *projectRepository) UpdateById(projectId string, updatedProject *models.Project) (*models.Project, error) {
+	db, ctx, err := utils.MongodbConnect()
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	filter := bson.M{"_id": projectId}
+	update := bson.M{"$set": updatedProject}
+
+	_, err = db.Collection("projects").UpdateOne(ctx, filter, update)
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	return updatedProject, nil
 }

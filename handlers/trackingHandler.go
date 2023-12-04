@@ -13,6 +13,7 @@ type TrackingHandler interface {
 	TrackingFindAllHandler() gin.HandlerFunc
 	TrackingInsertHandler() gin.HandlerFunc
 	TrackingDeleteByIdHandler() gin.HandlerFunc
+	TrackingUpdateByIdHandler() gin.HandlerFunc
 }
 
 type trackingHandler struct {
@@ -77,5 +78,25 @@ func (s *trackingHandler) TrackingDeleteByIdHandler() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"message": "tracking deleted"})
+	}
+}
+
+func (s *trackingHandler) TrackingUpdateByIdHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+
+		var updatedTracking models.Tracking
+		if err := c.ShouldBindJSON(&updatedTracking); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		tracking, err := s.svc.UpdateById(id, updatedTracking)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update tracking"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Tracking updated successfully", "tracking": tracking})
 	}
 }

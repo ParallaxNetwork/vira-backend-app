@@ -14,6 +14,7 @@ type FundingHandler interface {
 	FundingFindAllByUserId() gin.HandlerFunc
 	FundingInsertHandler() gin.HandlerFunc
 	FundingDeleteByIdHandler() gin.HandlerFunc
+	FundingUpdateByIdHandler() gin.HandlerFunc
 }
 
 type fundingHandler struct{
@@ -93,5 +94,25 @@ func (s *fundingHandler) FundingDeleteByIdHandler() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"message": "Funding deleted successfully"})
+	}
+}
+
+func (s *fundingHandler) FundingUpdateByIdHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		fundingId := c.Param("id")
+
+		var updatedFunding models.Funding
+		if err := c.ShouldBindJSON(&updatedFunding); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		funding, err := s.svc.UpdateById(fundingId, updatedFunding)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update funding"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Funding updated successfully", "funding": funding})
 	}
 }

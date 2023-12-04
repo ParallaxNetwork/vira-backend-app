@@ -13,6 +13,7 @@ type UserHandler interface {
 	UserFindByIdHandler() gin.HandlerFunc
 	UserInsertHandler() gin.HandlerFunc
 	UserDeleteByIdHandler() gin.HandlerFunc
+	UserUpdateByIdHandler() gin.HandlerFunc
 }
 
 type userHandler struct {
@@ -26,15 +27,15 @@ func NewUserHandler(svc services.UserService) UserHandler {
 }
 
 func (s *userHandler) UserFindAllHandler() gin.HandlerFunc {
-    return func(c *gin.Context) {
-        users, err := s.svc.FindAll()
-        if err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get users"})
-            return
-        }
+	return func(c *gin.Context) {
+		users, err := s.svc.FindAll()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get users"})
+			return
+		}
 
-        c.JSON(http.StatusOK, users)
-    }
+		c.JSON(http.StatusOK, users)
+	}
 }
 
 func (s *userHandler) UserFindByIdHandler() gin.HandlerFunc {
@@ -80,5 +81,25 @@ func (s *userHandler) UserDeleteByIdHandler() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+	}
+}
+
+func (s *userHandler) UserUpdateByIdHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID := c.Param("id")
+
+		var updatedUser models.User
+		if err := c.ShouldBindJSON(&updatedUser); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		user, err := s.svc.UpdateById(userID, updatedUser)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "User updated successfully", "user": user})
 	}
 }

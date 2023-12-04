@@ -17,6 +17,7 @@ type FundingRepository interface {
 	FindAllByUserId(userId string) ([]models.Funding, error)
 	InsertOne(funding models.Funding) (*models.Funding, error)
 	DeleteById(id string) (error)
+	UpdateById(id string, updatedFunding *models.Funding) (*models.Funding, error)
 }
 
 type fundingRepository struct {}
@@ -144,4 +145,21 @@ func (r *fundingRepository) DeleteById(id string) (error) {
 	}
 
 	return nil
+}
+
+func (r *fundingRepository) UpdateById(id string, updatedFunding *models.Funding) (*models.Funding, error) {
+	db, ctx, err := utils.MongodbConnect()
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	filter := bson.M{"_id": id}
+	update := bson.M{"$set": updatedFunding}
+
+	_, err = db.Collection("fundings").UpdateOne(ctx, filter, update)
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	return updatedFunding, nil
 }

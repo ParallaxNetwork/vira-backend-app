@@ -19,5 +19,6 @@ func UserRoutes(route *gin.RouterGroup) {
 		user.GET("/:id", userHandler.UserFindByIdHandler())
 		user.POST("", userHandler.UserInsertHandler())
 		user.DELETE("/:id", userHandler.UserDeleteByIdHandler())
+		user.PUT("/:id", userHandler.UserUpdateByIdHandler())
 	}
 }
