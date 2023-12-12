@@ -18,5 +18,5 @@ func main() {
 	port := os.Getenv("PORT")
 	router := routers.SetupRouter()
 
-	router.Run("127.0.0.1:"+port)
+	router.Run("0.0.0.0:"+port)
 }

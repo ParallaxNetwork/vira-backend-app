@@ -14,6 +14,7 @@ func SetupRouter() *gin.Engine {
 	FundingRoutes(v1)
 	TrackingRoutes(v1)
 	NotificationRoutes(v1)
+	ContentRoutes(v1)
 
 	return mainRouter
 }

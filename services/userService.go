@@ -8,10 +8,11 @@ import (
 
 type UserService interface {
 	FindAll() ([]*models.User, error)
-	FindById(userID string) (*models.User, error)
+	FindById(id string) (*models.User, error)
+	FindByWallet(wallet string) (*models.User, error)
 	InsertOne(user models.User) (*models.User, error)
-	DeleteById(userId string) (error)
-	UpdateById(userID string, updatedUser models.User) (*models.User, error)
+	DeleteById(id string) (error)
+	UpdateById(id string, updatedUser models.User) (*models.User, error)
 }
 
 type userService struct {
@@ -26,20 +27,24 @@ func (s *userService) FindAll() ([]*models.User, error) {
   return s.repo.FindAll()
 }
 
-func (s *userService) FindById(userID string) (*models.User, error) {
-	return s.repo.FindById(userID)
+func (s *userService) FindById(id string) (*models.User, error) {
+	return s.repo.FindById(id)
+}
+
+func (s *userService) FindByWallet(wallet string) (*models.User, error) {
+	return s.repo.FindByWallet(wallet)
 }
 
 func (s *userService) InsertOne(user models.User) (*models.User, error) {
 	return s.repo.InsertOne(user)
 }
 
-func (s *userService) DeleteById(userId string) (error) {
-	return s.repo.DeleteById(userId)
+func (s *userService) DeleteById(id string) (error) {
+	return s.repo.DeleteById(id)
 }
 
-func (s *userService) UpdateById(userID string, updatedUser models.User) (*models.User, error) {
-	user, err := s.repo.FindById(userID)
+func (s *userService) UpdateById(id string, updatedUser models.User) (*models.User, error) {
+	user, err := s.repo.FindById(id)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +59,7 @@ func (s *userService) UpdateById(userID string, updatedUser models.User) (*model
 		}
 	}
 
-	updatedUser_, err := s.repo.UpdateById(userID, user)
+	updatedUser_, err := s.repo.UpdateById(id, user)
 	if err != nil {
 		return nil, err
 	}

@@ -7,11 +7,11 @@ import (
 )
 
 type TrackingService interface {
-	FindById(trackingID string) (*models.Tracking, error)
+	FindById(id string) (*models.Tracking, error)
 	FindAll() ([]models.Tracking, error)
 	InsertOne(tracking models.Tracking) (*models.Tracking, error)
-	DeleteById(trackingId string) (error)
-	UpdateById(trackingID string, updatedTracking models.Tracking) (*models.Tracking, error)
+	DeleteById(id string) (error)
+	UpdateById(id string, updatedTracking models.Tracking) (*models.Tracking, error)
 }
 
 type trackingService struct {
@@ -22,8 +22,8 @@ func NewTrackingService(repo repositories.TrackingRepository) TrackingService {
 	return &trackingService{repo: repo}
 }
 
-func (s *trackingService) FindById(trackingID string) (*models.Tracking, error) {
-	return s.repo.FindById(trackingID)
+func (s *trackingService) FindById(id string) (*models.Tracking, error) {
+	return s.repo.FindById(id)
 }
 
 func (s *trackingService) FindAll() ([]models.Tracking, error) {
@@ -34,12 +34,12 @@ func (s *trackingService) InsertOne(tracking models.Tracking) (*models.Tracking,
 	return s.repo.InsertOne(tracking)
 }
 
-func (s *trackingService) DeleteById(trackingId string) (error) {
-	return s.repo.DeleteById(trackingId)
+func (s *trackingService) DeleteById(id string) (error) {
+	return s.repo.DeleteById(id)
 }
 
-func (s *trackingService) UpdateById(trackingID string, updatedTracking models.Tracking) (*models.Tracking, error) {
-  tracking, err := s.repo.FindById(trackingID)
+func (s *trackingService) UpdateById(id string, updatedTracking models.Tracking) (*models.Tracking, error) {
+  tracking, err := s.repo.FindById(id)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (s *trackingService) UpdateById(trackingID string, updatedTracking models.T
 		}
 	}
 
-	updatedTracking_, err := s.repo.UpdateById(trackingID, tracking)
+	updatedTracking_, err := s.repo.UpdateById(id, tracking)
 	if err != nil {
 		return nil, err
 	}

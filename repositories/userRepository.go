@@ -13,6 +13,7 @@ import (
 type UserRepository interface {
 	FindAll() ([]*models.User, error)
 	FindById(userID string) (*models.User, error)
+	FindByWallet(wallet string) (*models.User, error)
 	InsertOne(user models.User) (*models.User, error)
 	DeleteById(userId string) (error)
 	UpdateById(userId string, updatedUser *models.User) (*models.User, error)
@@ -57,10 +58,31 @@ func (r *userRepository) FindById(userId string) (*models.User, error) {
 	err = db.Collection("users").FindOne(ctx, filter).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, fmt.Errorf("No User Found: %v", err)
+			return nil, fmt.Errorf("NO USER FOUND: %v", err)
 		}
 
-		return nil, fmt.Errorf("Database Error: %v", err)
+		return nil, fmt.Errorf("DATABASE ERROR: %v", err)
+	}
+
+	return &user, nil
+}
+
+func (r *userRepository) FindByWallet(wallet string) (*models.User, error) {
+	db, ctx, err := utils.MongodbConnect()
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	var user models.User
+	filter := bson.M{"wallet_address": wallet}
+
+	err = db.Collection("users").FindOne(ctx, filter).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("NO USER FOUND: %v", err)
+		}
+
+		return nil, fmt.Errorf("DATABASE ERROR: %v", err)
 	}
 
 	return &user, nil

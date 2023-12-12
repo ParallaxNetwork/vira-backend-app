@@ -7,11 +7,11 @@ import (
 )
 
 type ProjectService interface {
-	FindById(projectID string) (*models.Project, error)
+	FindById(id string) (*models.Project, error)
 	FindAll() ([]models.Project, error)
 	InsertOne(project models.Project) (*models.Project, error)
-	DeleteById(projectId string) (error)
-	UpdateById(projectID string, updatedProject models.Project) (*models.Project, error)
+	DeleteById(id string) (error)
+	UpdateById(id string, updatedProject models.Project) (*models.Project, error)
 }
 
 type projectService struct {
@@ -22,8 +22,8 @@ func NewProjectService(repo repositories.ProjectRepository) ProjectService {
 	return &projectService{repo: repo}
 }
 
-func (s *projectService) FindById(projectID string) (*models.Project, error) {
-	return s.repo.FindById(projectID)
+func (s *projectService) FindById(id string) (*models.Project, error) {
+	return s.repo.FindById(id)
 }
 
 func (s *projectService) FindAll() ([]models.Project, error) {
@@ -34,12 +34,12 @@ func (s *projectService) InsertOne(project models.Project) (*models.Project, err
 	return s.repo.InsertOne(project)
 }
 
-func (s *projectService) DeleteById(projectId string) (error) {
-	return s.repo.DeleteById(projectId)
+func (s *projectService) DeleteById(id string) (error) {
+	return s.repo.DeleteById(id)
 }
 
-func (s *projectService) UpdateById(projectID string, updatedProject models.Project) (*models.Project, error) {
-	project, err := s.repo.FindById(projectID)
+func (s *projectService) UpdateById(id string, updatedProject models.Project) (*models.Project, error) {
+	project, err := s.repo.FindById(id)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (s *projectService) UpdateById(projectID string, updatedProject models.Proj
 		}
 	}
 
-	updatedProject_, err := s.repo.UpdateById(projectID, project)
+	updatedProject_, err := s.repo.UpdateById(id, project)
 	if err != nil {
 		return nil, err
 	}

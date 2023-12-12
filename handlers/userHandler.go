@@ -60,6 +60,12 @@ func (s *userHandler) UserInsertHandler() gin.HandlerFunc {
 			return
 		}
 
+		checkUser, _ := s.svc.FindByWallet(user.WalletAddress)
+		if checkUser != nil {
+			c.JSON(http.StatusOK, gin.H{"message": "User already exists", "user": checkUser})
+			return
+		}
+
 		insertedUser, err := s.svc.InsertOne(user)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

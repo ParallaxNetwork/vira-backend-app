@@ -7,11 +7,11 @@ import (
 )
 
 type FundingService interface {
-	FindById(fundingId string) (*models.Funding, error)
+	FindById(id string) (*models.Funding, error)
 	FindAll() ([]models.Funding, error)
 	FindAllByUserId(userId string) ([]models.Funding, error)
 	InsertOne(funding models.Funding) (*models.Funding, error)
-	DeleteById(fundingId string) (error)
+	DeleteById(id string) (error)
 	UpdateById(id string, updatedFunding models.Funding) (*models.Funding, error)
 }
 
@@ -23,8 +23,8 @@ func NewFundingService (repo repositories.FundingRepository) FundingService {
 	return &fundingService{repo: repo}
 }
 
-func (s *fundingService) FindById(fundingId string) (*models.Funding, error) {
-	return s.repo.FindById(fundingId)
+func (s *fundingService) FindById(id string) (*models.Funding, error) {
+	return s.repo.FindById(id)
 }
 
 func (s *fundingService) FindAll() ([]models.Funding, error) {
@@ -39,8 +39,8 @@ func (s *fundingService) InsertOne(funding models.Funding) (*models.Funding, err
 	return s.repo.InsertOne(funding)
 }
 
-func (s *fundingService) DeleteById(fundingId string) (error) {
-	return s.repo.DeleteById(fundingId)
+func (s *fundingService) DeleteById(id string) (error) {
+	return s.repo.DeleteById(id)
 }
 
 func (s *fundingService) UpdateById(id string, updatedFunding models.Funding) (*models.Funding, error) {
