@@ -122,6 +122,33 @@ func (r *fundingRepository) InsertOne(funding models.Funding) (*models.Funding, 
 		return nil, fmt.Errorf(err.Error())
 	}
 
+	cursor, err := db.Collection("fundings").Find(ctx, bson.M{"project_id": funding.ProjectId})
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	var fundings []models.Funding
+	var fundingCountTotal float64 = 0
+
+	err = cursor.All(ctx, &fundings)
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	for i := range fundings {
+		fundingCountTotal += fundings[i].Amount
+	}
+
+	var project models.Project
+	err = db.Collection("projects").FindOne(ctx, bson.M{"_id": funding.ProjectId}).Decode(&project)
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	if fundingCountTotal + funding.Amount > project.InitialValue {
+		return nil, fmt.Errorf("Maximum amount of funding reached for this project. You can't add more funding")
+	}
+
 	funding.FundingId = utils.GenerateRandomID()
 	funding.CreatedAt = utils.GetCurrentTime()
 

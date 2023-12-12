@@ -38,11 +38,29 @@ func (r *projectRepository) FindById(projectId string) (*models.Project, error) 
 	err = db.Collection("projects").FindOne(ctx, filter).Decode(&project)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, fmt.Errorf("No Project Found: %v", err)
+			return nil, fmt.Errorf("NO PROJECT FOUND: %v", err)
 		}
 
-		return nil, fmt.Errorf("Database Error: %v", err)
+		return nil, fmt.Errorf("DATABASE ERROR: %v", err)
 	}
+
+	cursor, err := db.Collection("fundings").Find(ctx, bson.M{"project_id": project.ProjectId})
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	var fundings []models.Funding
+	var fundingCountTotal float64 = 0
+	err = cursor.All(ctx, &fundings)
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	for _, funding := range fundings {
+		fundingCountTotal += funding.Amount
+	}
+
+	project.CollectedValue = fundingCountTotal
 
 	return &project, nil
 }
