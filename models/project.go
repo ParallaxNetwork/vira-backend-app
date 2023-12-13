@@ -10,10 +10,10 @@ type Project struct {
 	Location      			string				`json:"location" bson:"location"`
 	InitialValue  			float64 			`json:"initial_value" bson:"initial_value"`
 	CollectedValue			float64 			`json:"collected_value" bson:"collected_value"` // Funding collected value
-	FullReturnDuration	int 					`json:"full_return_duration" bson:"full_return_duration"`
-	ContractDuration 		int 					`json:"contract_duration" bson:"contract_duration"`
+	FullReturnDuration	int64					`json:"full_return_duration" bson:"full_return_duration"`
+	ContractDuration 		int64					`json:"contract_duration" bson:"contract_duration"`
 	ReturnPerYear  			float64 			`json:"return_per_year" bson:"return_per_year"`
 	Risk           			string 				`json:"risk" bson:"risk"`
 	Status         			enums.Status 	`json:"status" bson:"status"`
-	CreatedAt     			string 				`json:"created_at" bson:"created_at"`
+	CreatedAt     			int64 				`json:"created_at" bson:"created_at"`
 }

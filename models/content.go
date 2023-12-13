@@ -5,5 +5,5 @@ type Content struct {
 	ImageUrl    string `json:"image_url" bson:"image_url"`
 	Title       string `json:"title" bson:"title"`
 	Description string `json:"description" bson:"description"`
-	CreatedAt   string `json:"created_at" bson:"created_at"`
+	CreatedAt   int64  `json:"created_at" bson:"created_at"`
 }
