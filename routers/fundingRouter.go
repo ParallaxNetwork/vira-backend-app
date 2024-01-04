@@ -8,19 +8,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func FundingRoutes(funding *gin.RouterGroup) {
+	fundingRepository := repositories.NewFundingRepository()
+	fundingService := services.NewFundingService(fundingRepository)
+	fundingHandler := handlers.NewFundingHandler(fundingService)
 
-func FundingRoutes(router *gin.RouterGroup) {
-	fundingRepo := repositories.NewFundingRepository()
-	fundingSvc := services.NewFundingService(fundingRepo)
-	fundingHandler := handlers.NewFundingHandler(fundingSvc)
-
-	fundingRoutes := router.Group("/funding")
-	{
-		fundingRoutes.GET("/", fundingHandler.FundingFindAllHandler())
-		fundingRoutes.GET("/:id", fundingHandler.FundingFindByIdHandler())
-		fundingRoutes.GET("/user/:id", fundingHandler.FundingFindAllByUserId())
-		fundingRoutes.POST("/", fundingHandler.FundingInsertHandler())
-		fundingRoutes.DELETE("/:id", fundingHandler.FundingDeleteByIdHandler())
-		fundingRoutes.PUT("/:id", fundingHandler.FundingUpdateByIdHandler())
-	}
+	funding.GET("", fundingHandler.FundingFindAllHandler())
+	funding.GET("/:id", fundingHandler.FundingFindByIdHandler())
+	funding.GET("/user/:id", fundingHandler.FundingFindAllByUserId())
+	funding.POST("", fundingHandler.FundingInsertHandler())
+	funding.DELETE("/:id", fundingHandler.FundingDeleteByIdHandler())
+	funding.PUT("/:id", fundingHandler.FundingUpdateByIdHandler())
 }

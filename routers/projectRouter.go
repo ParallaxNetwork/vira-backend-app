@@ -8,17 +8,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ProjectRoutes(router *gin.RouterGroup) {
+func ProjectRoutes(project *gin.RouterGroup) {
 	projectRepository := repositories.NewProjectRepository()
 	projectService := services.NewProjectService(projectRepository)
 	projectHandler := handlers.NewProjectHandler(projectService)
 
-	project := router.Group("/project")
-	{
-		project.GET("/:id", projectHandler.ProjectFindByIdHandler())
-		project.GET("/", projectHandler.ProjectFindAllHandler())
-		project.POST("/", projectHandler.ProjectInsertHandler())
-		project.DELETE("/:id", projectHandler.ProjectDeleteByIdHandler())
-		project.PUT("/:id", projectHandler.ProjectUpdateByIdHandler())
-	}
+	project.GET("/:id", projectHandler.ProjectFindByIdHandler())
+	project.GET("", projectHandler.ProjectFindAllHandler())
+	project.POST("", projectHandler.ProjectInsertHandler())
+	project.DELETE("/:id", projectHandler.ProjectDeleteByIdHandler())
+	project.PUT("/:id", projectHandler.ProjectUpdateByIdHandler())
+
 }
