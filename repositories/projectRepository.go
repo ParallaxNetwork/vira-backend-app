@@ -15,11 +15,11 @@ type ProjectRepository interface {
 	FindById(projectId string) (*models.Project, error)
 	FindAll() ([]models.Project, error)
 	InsertOne(project models.Project) (*models.Project, error)
-	DeleteById(projectId string) (error)
+	DeleteById(projectId string) error
 	UpdateById(projectId string, updatedProject *models.Project) (*models.Project, error)
 }
 
-type projectRepository struct {}
+type projectRepository struct{}
 
 func NewProjectRepository() ProjectRepository {
 	return &projectRepository{}
@@ -84,23 +84,23 @@ func (r *projectRepository) FindAll() ([]models.Project, error) {
 	}
 
 	for i := range projects {
-    cursor, err := db.Collection("fundings").Find(ctx, bson.M{"project_id": projects[i].ProjectId})
-    if err != nil {
-        return nil, fmt.Errorf(err.Error())
-    }
+		cursor, err := db.Collection("fundings").Find(ctx, bson.M{"project_id": projects[i].ProjectId})
+		if err != nil {
+			return nil, fmt.Errorf(err.Error())
+		}
 
-    var fundings []models.Funding
-    var fundingCountTotal float64 = 0
-    err = cursor.All(ctx, &fundings)
-    if err != nil {
-        return nil, fmt.Errorf(err.Error())
-    }
+		var fundings []models.Funding
+		var fundingCountTotal float64 = 0
+		err = cursor.All(ctx, &fundings)
+		if err != nil {
+			return nil, fmt.Errorf(err.Error())
+		}
 
-    for _, funding := range fundings {
-        fundingCountTotal += funding.Amount
-    }
+		for _, funding := range fundings {
+			fundingCountTotal += funding.Amount
+		}
 
-    projects[i].CollectedValue = fundingCountTotal
+		projects[i].CollectedValue = fundingCountTotal
 	}
 
 	return projects, nil
@@ -114,7 +114,7 @@ func (r *projectRepository) InsertOne(project models.Project) (*models.Project, 
 
 	project.ProjectId = utils.GenerateRandomID()
 	project.CreatedAt = utils.GetCurrentTime()
-	project.Status 		= enums.Crowdfunding
+	project.Status = enums.Crowdfunding
 
 	_, err = db.Collection("projects").InsertOne(ctx, project)
 	if err != nil {
@@ -124,7 +124,7 @@ func (r *projectRepository) InsertOne(project models.Project) (*models.Project, 
 	return &project, nil
 }
 
-func (r *projectRepository) DeleteById(projectId string) (error) {
+func (r *projectRepository) DeleteById(projectId string) error {
 	db, ctx, err := utils.MongodbConnect()
 	if err != nil {
 		return fmt.Errorf(err.Error())

@@ -7,6 +7,7 @@ import (
 func SetupRouter() *gin.Engine {
 	mainRouter := gin.Default()
 
+	mainRouter.MaxMultipartMemory = 5 << 20
 	mainRouter.Use(CORSMiddleware())
 	// mainRouter.Use(cors.New(cors.Config{
 	// 	AllowOrigins:     []string{"*"},

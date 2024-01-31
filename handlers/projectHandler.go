@@ -53,6 +53,7 @@ func (s *projectHandler) ProjectFindAllHandler() gin.HandlerFunc {
 func (s *projectHandler) ProjectInsertHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var project models.Project
+
 		if err := c.ShouldBindJSON(&project); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -88,14 +89,14 @@ func (s *projectHandler) ProjectUpdateByIdHandler() gin.HandlerFunc {
 
 		var updatedProject models.Project
 		if err := c.ShouldBindJSON(&updatedProject); err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				return
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
 		}
 
 		project, err := s.svc.UpdateById(projectId, updatedProject)
 		if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update project"})
-				return
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update project"})
+			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{"message": "Project updated successfully", "project": project})
