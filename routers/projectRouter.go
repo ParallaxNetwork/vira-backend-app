@@ -18,5 +18,6 @@ func ProjectRoutes(project *gin.RouterGroup) {
 	project.POST("", projectHandler.ProjectInsertHandler())
 	project.DELETE("/:id", projectHandler.ProjectDeleteByIdHandler())
 	project.PUT("/:id", projectHandler.ProjectUpdateByIdHandler())
-
+	project.PUT("/start/:id", projectHandler.StartProject())
+	project.PUT("/revoke/:id", projectHandler.RevokeProject())
 }

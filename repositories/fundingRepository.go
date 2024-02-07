@@ -1,11 +1,16 @@
 package repositories
 
 import (
+	"context"
 	"fmt"
+	"math/big"
 
 	"vira-backend-app/models"
 	"vira-backend-app/utils"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -16,11 +21,11 @@ type FundingRepository interface {
 	FindAllByProjectId(projectId string) ([]models.Funding, error)
 	FindAllByUserId(userId string) ([]models.Funding, error)
 	InsertOne(funding models.Funding) (*models.Funding, error)
-	DeleteById(id string) (error)
+	DeleteById(id string) error
 	UpdateById(id string, updatedFunding *models.Funding) (*models.Funding, error)
 }
 
-type fundingRepository struct {}
+type fundingRepository struct{}
 
 func NewFundingRepository() FundingRepository {
 	return &fundingRepository{}
@@ -39,10 +44,10 @@ func (r *fundingRepository) FindById(id string) (*models.Funding, error) {
 	err = db.Collection("fundings").FindOne(ctx, filter).Decode(&funding)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, fmt.Errorf("No Funding Found: %v", err)
+			return nil, fmt.Errorf("no funding found: %v", err)
 		}
 
-		return nil, fmt.Errorf("Database Error: %v", err)
+		return nil, fmt.Errorf("database error: %v", err)
 	}
 
 	return &funding, nil
@@ -117,50 +122,82 @@ func (r *fundingRepository) FindAllByUserId(userId string) ([]models.Funding, er
 }
 
 func (r *fundingRepository) InsertOne(funding models.Funding) (*models.Funding, error) {
+	// Get contract, wallet and databases ready
+	contract, client := utils.ContractConnect()
+	wallet := utils.WalletConnect(client)
 	db, ctx, err := utils.MongodbConnect()
 	if err != nil {
 		return nil, fmt.Errorf(err.Error())
 	}
 
-	cursor, err := db.Collection("fundings").Find(ctx, bson.M{"project_id": funding.ProjectId})
-	if err != nil {
-		return nil, fmt.Errorf(err.Error())
-	}
+	// Find current funding with matching userId and projectId
+	var currFunding models.Funding
+	_ = db.Collection("fundings").FindOne(ctx, bson.M{"user_id": funding.UserId, "project_id": funding.ProjectId}).Decode(&currFunding)
 
-	var fundings []models.Funding
-	var fundingCountTotal float64 = 0
-
-	err = cursor.All(ctx, &fundings)
-	if err != nil {
-		return nil, fmt.Errorf(err.Error())
-	}
-
-	for i := range fundings {
-		fundingCountTotal += fundings[i].Amount
-	}
-
+	// Find target project
 	var project models.Project
 	err = db.Collection("projects").FindOne(ctx, bson.M{"_id": funding.ProjectId}).Decode(&project)
 	if err != nil {
 		return nil, fmt.Errorf(err.Error())
 	}
 
-	if fundingCountTotal + funding.Amount > project.InitialValue {
-		return nil, fmt.Errorf("Maximum amount of funding reached for this project. You can't add more funding")
-	}
-
-	funding.FundingId = utils.GenerateRandomID()
-	funding.CreatedAt = utils.GetCurrentTime()
-
-	_, err = db.Collection("fundings").InsertOne(ctx, funding)
+	// Search user wallet as target wallet for minting
+	var user models.User
+	err = db.Collection("users").FindOne(ctx, bson.M{"_id": funding.UserId}).Decode(&user)
 	if err != nil {
 		return nil, fmt.Errorf(err.Error())
 	}
 
-	return &funding, nil
+	var txn *types.Transaction
+	if currFunding.FundingId != "" {
+		// Add new funding to current tokenId
+		hexString := currFunding.TokenId[2:]
+		currFundTokenId, _ := new(big.Int).SetString(hexString, 16)
+		txn, err = contract.MintValue(wallet, currFundTokenId, big.NewInt(int64(funding.Amount*1e6)))
+		if err != nil {
+			return nil, fmt.Errorf(err.Error())
+		}
+		bind.WaitMined(context.Background(), client, txn)
+	} else {
+		// Mint new token to user wallet from available campaign
+		txn, err = contract.Mint(wallet, common.HexToAddress(user.WalletAddress), funding.ProjectId, big.NewInt(int64(funding.Amount*1e6)))
+		if err != nil {
+			return nil, fmt.Errorf(err.Error())
+		}
+		bind.WaitMined(context.Background(), client, txn)
+	}
+
+	// Get token ID from recent txn
+	txnReceipt, err := client.TransactionReceipt(context.Background(), txn.Hash())
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	// Update funding data
+	if currFunding.FundingId == "" {
+		funding.FundingId = utils.GenerateRandomID()
+		funding.CreatedAt = utils.GetCurrentTime()
+		funding.TokenId = txnReceipt.Logs[4].Topics[2].String()
+
+		_, err = db.Collection("fundings").InsertOne(ctx, funding)
+		if err != nil {
+			return nil, fmt.Errorf(err.Error())
+		}
+
+		return &funding, nil
+	} else {
+		currFunding.Amount += funding.Amount
+
+		_, err = db.Collection("fundings").UpdateOne(ctx, bson.M{"_id": currFunding.FundingId}, bson.M{"$set": currFunding})
+		if err != nil {
+			return nil, fmt.Errorf(err.Error())
+		}
+
+		return &currFunding, nil
+	}
 }
 
-func (r *fundingRepository) DeleteById(id string) (error) {
+func (r *fundingRepository) DeleteById(id string) error {
 	db, ctx, err := utils.MongodbConnect()
 	if err != nil {
 		return fmt.Errorf(err.Error())

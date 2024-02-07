@@ -10,8 +10,10 @@ type ProjectService interface {
 	FindById(id string) (*models.Project, error)
 	FindAll() ([]models.Project, error)
 	InsertOne(project models.Project) (*models.Project, error)
-	DeleteById(id string) (error)
+	DeleteById(id string) error
 	UpdateById(id string, updatedProject models.Project) (*models.Project, error)
+	StartProject(projectId string) error
+	RevokeProject(projectId string) error
 }
 
 type projectService struct {
@@ -34,7 +36,7 @@ func (s *projectService) InsertOne(project models.Project) (*models.Project, err
 	return s.repo.InsertOne(project)
 }
 
-func (s *projectService) DeleteById(id string) (error) {
+func (s *projectService) DeleteById(id string) error {
 	return s.repo.DeleteById(id)
 }
 
@@ -60,4 +62,12 @@ func (s *projectService) UpdateById(id string, updatedProject models.Project) (*
 	}
 
 	return updatedProject_, nil
+}
+
+func (s *projectService) StartProject(projectId string) error {
+	return s.repo.StartProject(projectId)
+}
+
+func (s *projectService) RevokeProject(projectId string) error {
+	return s.repo.RevokeProject(projectId)
 }

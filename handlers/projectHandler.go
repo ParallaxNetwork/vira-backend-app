@@ -14,6 +14,8 @@ type ProjectHandler interface {
 	ProjectInsertHandler() gin.HandlerFunc
 	ProjectDeleteByIdHandler() gin.HandlerFunc
 	ProjectUpdateByIdHandler() gin.HandlerFunc
+	StartProject() gin.HandlerFunc
+	RevokeProject() gin.HandlerFunc
 }
 
 type projectHandler struct {
@@ -100,5 +102,33 @@ func (s *projectHandler) ProjectUpdateByIdHandler() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"message": "Project updated successfully", "project": project})
+	}
+}
+
+func (s *projectHandler) StartProject() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		projectId := c.Param("id")
+
+		err := s.svc.StartProject(projectId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to start project"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Project started successfully"})
+	}
+}
+
+func (s *projectHandler) RevokeProject() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		projectId := c.Param("id")
+
+		err := s.svc.RevokeProject(projectId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to revoke project"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Project revoked successfully"})
 	}
 }
