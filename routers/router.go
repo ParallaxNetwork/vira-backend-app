@@ -24,6 +24,7 @@ func SetupRouter() *gin.Engine {
 	TrackingRoutes(v1.Group("/tracking"))
 	FundingRoutes(v1.Group("/funding"))
 	WithdrawalRoutes(v1.Group("/withdrawal"))
+	AdminRoutes(v1.Group("/admin"))
 	// NotificationRoutes(v1)
 	// ContentRoutes(v1)
 
