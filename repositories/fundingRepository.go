@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"vira-backend-app/dto"
 	"vira-backend-app/models"
 	"vira-backend-app/utils"
 
@@ -20,7 +21,7 @@ type FundingRepository interface {
 	FindAll() ([]models.Funding, error)
 	FindAllByProjectId(projectId string) ([]models.Funding, error)
 	FindAllByUserId(userId string) ([]models.Funding, error)
-	InsertOne(funding models.Funding) (*models.Funding, error)
+	InsertOne(funding dto.FundingInsertOneDTO) (*models.Funding, error)
 	DeleteById(id string) error
 	UpdateById(id string, updatedFunding *models.Funding) (*models.Funding, error)
 }
@@ -121,7 +122,7 @@ func (r *fundingRepository) FindAllByUserId(userId string) ([]models.Funding, er
 	return fundings, nil
 }
 
-func (r *fundingRepository) InsertOne(funding models.Funding) (*models.Funding, error) {
+func (r *fundingRepository) InsertOne(fundingDTO dto.FundingInsertOneDTO) (*models.Funding, error) {
 	// Get contract, wallet and databases ready
 	contract, client := utils.ContractConnect()
 	wallet := utils.WalletConnect(client)
@@ -132,18 +133,18 @@ func (r *fundingRepository) InsertOne(funding models.Funding) (*models.Funding, 
 
 	// Find current funding with matching userId and projectId
 	var currFunding models.Funding
-	_ = db.Collection("fundings").FindOne(ctx, bson.M{"user_id": funding.UserId, "project_id": funding.ProjectId}).Decode(&currFunding)
+	_ = db.Collection("fundings").FindOne(ctx, bson.M{"user_id": fundingDTO.UserId, "project_id": fundingDTO.ProjectId}).Decode(&currFunding)
 
 	// Find target project
 	var project models.Project
-	err = db.Collection("projects").FindOne(ctx, bson.M{"_id": funding.ProjectId}).Decode(&project)
+	err = db.Collection("projects").FindOne(ctx, bson.M{"_id": fundingDTO.ProjectId}).Decode(&project)
 	if err != nil {
 		return nil, fmt.Errorf(err.Error())
 	}
 
 	// Search user wallet as target wallet for minting
 	var user models.User
-	err = db.Collection("users").FindOne(ctx, bson.M{"_id": funding.UserId}).Decode(&user)
+	err = db.Collection("users").FindOne(ctx, bson.M{"_id": fundingDTO.UserId}).Decode(&user)
 	if err != nil {
 		return nil, fmt.Errorf(err.Error())
 	}
@@ -153,14 +154,14 @@ func (r *fundingRepository) InsertOne(funding models.Funding) (*models.Funding, 
 		// Add new funding to current tokenId
 		hexString := currFunding.TokenId[2:]
 		currFundTokenId, _ := new(big.Int).SetString(hexString, 16)
-		txn, err = contract.MintValue(wallet, currFundTokenId, big.NewInt(int64(funding.Amount*1e6)))
+		txn, err = contract.MintValue(wallet, currFundTokenId, big.NewInt(int64(fundingDTO.Amount*1e6)))
 		if err != nil {
 			return nil, fmt.Errorf(err.Error())
 		}
 		bind.WaitMined(context.Background(), client, txn)
 	} else {
 		// Mint new token to user wallet from available campaign
-		txn, err = contract.Mint(wallet, common.HexToAddress(user.WalletAddress), funding.ProjectId, big.NewInt(int64(funding.Amount*1e6)))
+		txn, err = contract.Mint(wallet, common.HexToAddress(user.WalletAddress), fundingDTO.ProjectId, big.NewInt(int64(fundingDTO.Amount*1e6)))
 		if err != nil {
 			return nil, fmt.Errorf(err.Error())
 		}
@@ -175,9 +176,17 @@ func (r *fundingRepository) InsertOne(funding models.Funding) (*models.Funding, 
 
 	// Update funding data
 	if currFunding.FundingId == "" {
+		var funding models.Funding
 		funding.FundingId = utils.GenerateRandomID()
-		funding.CreatedAt = utils.GetCurrentTime()
+		funding.ProjectId = fundingDTO.ProjectId
+		funding.UserId = fundingDTO.UserId
+		funding.TransactionHistory = append(funding.TransactionHistory, models.FundingTransaction{
+			Amount:   float64(fundingDTO.Amount),
+			AdminFee: float64(fundingDTO.AdminFee),
+			Total:    float64(fundingDTO.Total),
+		})
 		funding.TokenId = txnReceipt.Logs[4].Topics[2].String()
+		funding.CreatedAt = utils.GetCurrentTime()
 
 		_, err = db.Collection("fundings").InsertOne(ctx, funding)
 		if err != nil {
@@ -186,7 +195,11 @@ func (r *fundingRepository) InsertOne(funding models.Funding) (*models.Funding, 
 
 		return &funding, nil
 	} else {
-		currFunding.Amount += funding.Amount
+		currFunding.TransactionHistory = append(currFunding.TransactionHistory, models.FundingTransaction{
+			Amount:   float64(fundingDTO.Amount),
+			AdminFee: float64(fundingDTO.AdminFee),
+			Total:    float64(fundingDTO.Total),
+		})
 
 		_, err = db.Collection("fundings").UpdateOne(ctx, bson.M{"_id": currFunding.FundingId}, bson.M{"$set": currFunding})
 		if err != nil {

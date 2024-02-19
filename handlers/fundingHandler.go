@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"vira-backend-app/dto"
 	"vira-backend-app/models"
 	"vira-backend-app/services"
 
@@ -17,7 +18,7 @@ type FundingHandler interface {
 	FundingUpdateByIdHandler() gin.HandlerFunc
 }
 
-type fundingHandler struct{
+type fundingHandler struct {
 	svc services.FundingService
 }
 
@@ -67,7 +68,7 @@ func (s *fundingHandler) FundingFindAllByUserId() gin.HandlerFunc {
 
 func (s *fundingHandler) FundingInsertHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var funding models.Funding
+		var funding dto.FundingInsertOneDTO
 		if err := c.ShouldBindJSON(&funding); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return

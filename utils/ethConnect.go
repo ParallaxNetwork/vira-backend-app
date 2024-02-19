@@ -15,9 +15,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func ContractConnect() (*contracts.Vira, *ethclient.Client) {
+func ContractConnect() (*contracts.Main, *ethclient.Client) {
 	err := godotenv.Load(".env")
 	rpcUrl := os.Getenv("POLYGON_RPC_URL")
+	scAddress := os.Getenv("SC_ADDRESS")
 
 	if err != nil {
 		log.Fatalf("Error loading .env file: %s", err.Error())
@@ -29,7 +30,7 @@ func ContractConnect() (*contracts.Vira, *ethclient.Client) {
 		log.Fatal(err)
 	}
 
-	vira, err := contracts.NewVira(common.HexToAddress("0x13772B90a3174f05Fd6b62d300623F8F19C41d47"), client)
+	vira, err := contracts.NewMain(common.HexToAddress(scAddress), client)
 	if err != nil {
 		log.Fatalf("Error loading .env file: %s", err.Error())
 	}

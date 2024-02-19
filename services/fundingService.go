@@ -2,6 +2,7 @@ package services
 
 import (
 	"reflect"
+	"vira-backend-app/dto"
 	"vira-backend-app/models"
 	"vira-backend-app/repositories"
 )
@@ -10,8 +11,8 @@ type FundingService interface {
 	FindById(id string) (*models.Funding, error)
 	FindAll() ([]models.Funding, error)
 	FindAllByUserId(userId string) ([]models.Funding, error)
-	InsertOne(funding models.Funding) (*models.Funding, error)
-	DeleteById(id string) (error)
+	InsertOne(funding dto.FundingInsertOneDTO) (*models.Funding, error)
+	DeleteById(id string) error
 	UpdateById(id string, updatedFunding models.Funding) (*models.Funding, error)
 }
 
@@ -19,7 +20,7 @@ type fundingService struct {
 	repo repositories.FundingRepository
 }
 
-func NewFundingService (repo repositories.FundingRepository) FundingService {
+func NewFundingService(repo repositories.FundingRepository) FundingService {
 	return &fundingService{repo: repo}
 }
 
@@ -35,11 +36,11 @@ func (s *fundingService) FindAllByUserId(userId string) ([]models.Funding, error
 	return s.repo.FindAllByUserId(userId)
 }
 
-func (s *fundingService) InsertOne(funding models.Funding) (*models.Funding, error) {
+func (s *fundingService) InsertOne(funding dto.FundingInsertOneDTO) (*models.Funding, error) {
 	return s.repo.InsertOne(funding)
 }
 
-func (s *fundingService) DeleteById(id string) (error) {
+func (s *fundingService) DeleteById(id string) error {
 	return s.repo.DeleteById(id)
 }
 

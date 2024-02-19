@@ -64,7 +64,9 @@ func (r *projectRepository) FindById(projectId string) (*models.Project, error) 
 	}
 
 	for _, funding := range fundings {
-		fundingCountTotal += funding.Amount
+		for _, transaction := range funding.TransactionHistory {
+			fundingCountTotal += transaction.Amount
+		}
 	}
 
 	project.CollectedValue = fundingCountTotal
@@ -104,7 +106,9 @@ func (r *projectRepository) FindAll() ([]models.Project, error) {
 		}
 
 		for _, funding := range fundings {
-			fundingCountTotal += funding.Amount
+			for _, transaction := range funding.TransactionHistory {
+				fundingCountTotal += transaction.Amount
+			}
 		}
 
 		projects[i].CollectedValue = fundingCountTotal

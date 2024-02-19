@@ -46,6 +46,9 @@ func (r *adminRepository) FindOneByUsername(username string) (*models.Admin, err
 	}
 
 	var admin models.Admin
+	if username == "" {
+		return nil, fmt.Errorf("username cannot be empty")
+	}
 	err = db.Collection("admins").FindOne(ctx, bson.M{"username": username}).Decode(&admin)
 	if err != nil {
 		return nil, fmt.Errorf("username not found")
@@ -61,6 +64,9 @@ func (r *adminRepository) FindOneByEmail(email string) (*models.Admin, error) {
 	}
 
 	var admin models.Admin
+	if email == "" {
+		return nil, fmt.Errorf("email cannot be empty")
+	}
 	err = db.Collection("admins").FindOne(ctx, bson.M{"email": email}).Decode(&admin)
 	if err != nil {
 		return nil, fmt.Errorf("email not found")
