@@ -1,9 +1,10 @@
 package models
 
 type FundingTransaction struct {
-	Amount   float64 `json:"amount" bson:"amount"`
-	AdminFee float64 `json:"admin_fee" bson:"admin_fee"`
-	Total    float64 `json:"total" bson:"total"`
+	Amount    float64 `json:"amount" bson:"amount"`
+	AdminFee  float64 `json:"admin_fee" bson:"admin_fee"`
+	Total     float64 `json:"total" bson:"total"`
+	CreatedAt int64   `json:"created_at" bson:"created_at"`
 }
 
 type Funding struct {

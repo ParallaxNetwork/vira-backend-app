@@ -181,9 +181,10 @@ func (r *fundingRepository) InsertOne(fundingDTO dto.FundingInsertOneDTO) (*mode
 		funding.ProjectId = fundingDTO.ProjectId
 		funding.UserId = fundingDTO.UserId
 		funding.TransactionHistory = append(funding.TransactionHistory, models.FundingTransaction{
-			Amount:   float64(fundingDTO.Amount),
-			AdminFee: float64(fundingDTO.AdminFee),
-			Total:    float64(fundingDTO.Total),
+			Amount:    float64(fundingDTO.Amount),
+			AdminFee:  float64(fundingDTO.AdminFee),
+			Total:     float64(fundingDTO.Total),
+			CreatedAt: utils.GetCurrentTime(),
 		})
 		funding.TokenId = txnReceipt.Logs[4].Topics[2].String()
 		funding.CreatedAt = utils.GetCurrentTime()
@@ -196,9 +197,10 @@ func (r *fundingRepository) InsertOne(fundingDTO dto.FundingInsertOneDTO) (*mode
 		return &funding, nil
 	} else {
 		currFunding.TransactionHistory = append(currFunding.TransactionHistory, models.FundingTransaction{
-			Amount:   float64(fundingDTO.Amount),
-			AdminFee: float64(fundingDTO.AdminFee),
-			Total:    float64(fundingDTO.Total),
+			Amount:    float64(fundingDTO.Amount),
+			AdminFee:  float64(fundingDTO.AdminFee),
+			Total:     float64(fundingDTO.Total),
+			CreatedAt: utils.GetCurrentTime(),
 		})
 
 		_, err = db.Collection("fundings").UpdateOne(ctx, bson.M{"_id": currFunding.FundingId}, bson.M{"$set": currFunding})

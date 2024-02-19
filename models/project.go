@@ -4,6 +4,7 @@ import "vira-backend-app/enums"
 
 type Project struct {
 	ProjectId          string       `json:"project_id" bson:"_id"`
+	AdminId            string       `json:"admin_id" bson:"admin_id"`
 	ProjectName        string       `json:"project_name" bson:"project_name"`
 	ProjectDesc        string       `json:"project_desc" bson:"project_desc"`
 	Image              string       `json:"image" bson:"image"`

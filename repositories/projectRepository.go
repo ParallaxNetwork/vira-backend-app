@@ -19,6 +19,7 @@ import (
 type ProjectRepository interface {
 	FindById(projectId string) (*models.Project, error)
 	FindAll() ([]models.Project, error)
+	FindByAdminId(adminId string) (*models.Project, error)
 	InsertOne(project models.Project) (*models.Project, error)
 	DeleteById(projectId string) error
 	UpdateById(projectId string, updatedProject *models.Project) (*models.Project, error)
@@ -115,6 +116,28 @@ func (r *projectRepository) FindAll() ([]models.Project, error) {
 	}
 
 	return projects, nil
+}
+
+func (r *projectRepository) FindByAdminId(adminId string) (*models.Project, error) {
+	db, ctx, err := utils.MongodbConnect()
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	var project models.Project
+
+	filter := bson.M{"admin_id": adminId}
+
+	err = db.Collection("projects").FindOne(ctx, filter).Decode(&project)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("NO PROJECT FOUND: %v", err)
+		}
+
+		return nil, fmt.Errorf("DATABASE ERROR: %v", err)
+	}
+
+	return &project, nil
 }
 
 func (r *projectRepository) InsertOne(project models.Project) (*models.Project, error) {
